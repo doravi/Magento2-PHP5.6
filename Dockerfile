@@ -24,6 +24,16 @@ RUN requirements="libpng12-dev libmcrypt-dev libmcrypt4 libcurl3-dev libfreetype
     && docker-php-ext-install soap \
     && requirementsToRemove="libpng12-dev libmcrypt-dev libcurl3-dev libpng12-dev libfreetype6-dev libjpeg-turbo8-dev" \
     && apt-get purge --auto-remove -y $requirementsToRemove
+    
+# Make ssh dir
+RUN mkdir -p /root/.ssh
+RUN chown -R root:root /root/.ssh
+RUN chmod 700 /root/.ssh
+
+# Create known_hosts
+RUN touch /root/.ssh/known_hosts
+# Add github key
+RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 
 COPY ./auth.json /var/www/.composer/
 RUN chsh -s /bin/bash www-data
@@ -53,3 +63,7 @@ VOLUME /var/www/html/pub
 ADD crontab /etc/cron.d/magento2-cron
 RUN chmod 0644 /etc/cron.d/magento2-cron
 RUN crontab -u www-data /etc/cron.d/magento2-cron
+
+#Get permissions
+RUN cd /var/www
+RUN chmod -Rf 777 /var/
